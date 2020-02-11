@@ -1,14 +1,13 @@
-'use strict';
-const mongoose = require('mongoose');
-const { options, slugPaddingSize, nIterations } = require('./../options');
-const slugGenerator = require('../../.');
-mongoose.plugin(slugGenerator, options);
+const mongoose = require("mongoose");
+
+const { options, slugPaddingSize, nIterations } = require("./../options");
+const slugGenerator = require("../../.");
 
 const {
   InlineSchema,
   SimpleInlineSchema,
-  InlineUniqueSchema,
-} = require('./InlineSchema.js');
+  InlineUniqueSchema
+} = require("./InlineSchema.js");
 const {
   SubChildSchema,
   ChildSchema,
@@ -16,24 +15,25 @@ const {
   SimpleChildSchema,
   SimpleParentSchema,
   UniqueChildSchema,
-  UniqueParentSchema,
-} = require('./NestedSchema.js');
+  UniqueParentSchema
+} = require("./NestedSchema.js");
 
 const {
   ResourceGroupedUniqueCounter,
   ResourceGroupedUniqueShortId,
-  UniqueNestedSchema,
-} = require('./Unique.js');
+  UniqueNestedSchema
+} = require("./Unique.js");
 
-const Book = require('./Book');
+const Book = require("./Book");
+
 const CompoundUnique = new mongoose.Schema({
   type: { type: String },
-  name: { type: String },
+  name: { type: String }
 });
 CompoundUnique.index(
   {
     type: 1,
-    name: 1,
+    name: 1
   },
   { unique: true }
 );
@@ -42,84 +42,88 @@ const ResourceShortId = new mongoose.Schema({
   title: { type: String },
   subtitle: { type: String },
   otherField: { type: String },
-  slug: { type: String, slug: ['title', 'subtitle'] },
-  uniqueSlug: { type: String, unique: true, slug: 'title' },
-  forcedSlug: { type: String, slug: ['subtitle'], forceIdSlug: true },
+  slug: { type: String, slug: ["title", "subtitle"] },
+  uniqueSlug: { type: String, unique: true, slug: "title" },
+  forcedSlug: { type: String, slug: ["subtitle"], forceIdSlug: true }
 });
+ResourceShortId.plugin(slugGenerator, options);
 
 const ResourceCounter = new mongoose.Schema({
   title: { type: String },
   subtitle: { type: String },
   otherField: { type: String },
-  slug: { type: String, slug: ['title', 'subtitle'] },
+  slug: { type: String, slug: ["title", "subtitle"] },
   uniqueSlug: {
     type: String,
     unique: true,
-    slugPaddingSize: slugPaddingSize,
-    slug: 'title',
-  },
+    slugPaddingSize,
+    slug: "title"
+  }
 });
+ResourceCounter.plugin(slugGenerator, options);
 
 const ResourcePermanent = new mongoose.Schema({
   title: { type: String },
   subtitle: { type: String },
   otherField: { type: String },
-  slug: { type: String, slug: ['title', 'subtitle'] },
-  titleSlug: { type: String, slug: 'title', permanent: true },
+  slug: { type: String, slug: ["title", "subtitle"] },
+  titleSlug: { type: String, slug: "title", permanent: true },
   subtitleSlug: {
     type: String,
-    slug: 'subtitle',
+    slug: "subtitle",
     permanent: true,
-    slugPaddingSize: slugPaddingSize,
-  },
+    slugPaddingSize
+  }
 });
+ResourcePermanent.plugin(slugGenerator, options);
 
 const HooksSchema = new mongoose.Schema({
   title: { type: String },
-  slug: { type: String, slug: 'title' },
-  slugNoSave: { type: String, slug: 'title', slugOn: { save: false } },
-  slugNoUpdate: { type: String, slug: 'title', slugOn: { update: false } },
+  slug: { type: String, slug: "title" },
+  slugNoSave: { type: String, slug: "title", slugOn: { save: false } },
+  slugNoUpdate: { type: String, slug: "title", slugOn: { update: false } },
   slugNoUpdateOne: {
     type: String,
-    slug: 'title',
-    slugOn: { updateOne: false },
+    slug: "title",
+    slugOn: { updateOne: false }
   },
   slugNoUpdateMany: {
     type: String,
-    slug: 'title',
-    slugOn: { updateMany: false },
+    slug: "title",
+    slugOn: { updateMany: false }
   },
   slugNoFindOneAndUpdate: {
     type: String,
-    slug: 'title',
-    slugOn: { findOneAndUpdate: false },
-  },
+    slug: "title",
+    slugOn: { findOneAndUpdate: false }
+  }
 });
+HooksSchema.plugin(slugGenerator, options);
 
-const CompoundU = mongoose.model('CompoundUnique', CompoundUnique);
-const ShortId = mongoose.model('ResourceShortId', ResourceShortId);
-const Counter = mongoose.model('ResourceCounter', ResourceCounter);
+const CompoundU = mongoose.model("CompoundUnique", CompoundUnique);
+const ShortId = mongoose.model("ResourceShortId", ResourceShortId);
+const Counter = mongoose.model("ResourceCounter", ResourceCounter);
 const GroupedUniqueCounter = mongoose.model(
-  'ResourceGroupedUniqueCounter',
+  "ResourceGroupedUniqueCounter",
   ResourceGroupedUniqueCounter
 );
 const GroupedUniqueShortId = mongoose.model(
-  'ResourceGroupedUniqueShortId',
+  "ResourceGroupedUniqueShortId",
   ResourceGroupedUniqueShortId
 );
-const Permanent = mongoose.model('ResourcePermanent', ResourcePermanent);
-const Hook = mongoose.model('HooksSchema', HooksSchema);
-const SubChild = mongoose.model('SubChildSchema', SubChildSchema);
-const Child = mongoose.model('ChildSchema', ChildSchema);
-const Parent = mongoose.model('ParentSchema', ParentSchema);
-const Inline = mongoose.model('InlineSchema', InlineSchema);
-const SimpleInline = mongoose.model('SimpleInlineSchema', SimpleInlineSchema);
-const InlineUnique = mongoose.model('InlineUniqueSchema', InlineUniqueSchema);
-const SimpleChild = mongoose.model('SimpleChildSchema', SimpleChildSchema);
-const SimpleParent = mongoose.model('SimpleParentSchema', SimpleParentSchema);
-const UniqueChild = mongoose.model('UniqueChildSchema', UniqueChildSchema);
-const UniqueParent = mongoose.model('UniqueParentSchema', UniqueParentSchema);
-const UniqueNested = mongoose.model('UniqueNestedSchema', UniqueNestedSchema);
+const Permanent = mongoose.model("ResourcePermanent", ResourcePermanent);
+const Hook = mongoose.model("HooksSchema", HooksSchema);
+const SubChild = mongoose.model("SubChildSchema", SubChildSchema);
+const Child = mongoose.model("ChildSchema", ChildSchema);
+const Parent = mongoose.model("ParentSchema", ParentSchema);
+const Inline = mongoose.model("InlineSchema", InlineSchema);
+const SimpleInline = mongoose.model("SimpleInlineSchema", SimpleInlineSchema);
+const InlineUnique = mongoose.model("InlineUniqueSchema", InlineUniqueSchema);
+const SimpleChild = mongoose.model("SimpleChildSchema", SimpleChildSchema);
+const SimpleParent = mongoose.model("SimpleParentSchema", SimpleParentSchema);
+const UniqueChild = mongoose.model("UniqueChildSchema", UniqueChildSchema);
+const UniqueParent = mongoose.model("UniqueParentSchema", UniqueParentSchema);
+const UniqueNested = mongoose.model("UniqueNestedSchema", UniqueNestedSchema);
 module.exports = {
   CompoundU,
   ShortId,

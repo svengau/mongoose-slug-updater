@@ -1,65 +1,70 @@
-'use strict';
-const _ = require('deepdash')(require('lodash'));
-const mongoose = require('mongoose'),
-  chai = require('chai'),
-  should = chai.should(),
-  assert = require('assert');
-const tellme = require('./../tellme');
-const { options, slugPaddingSize } = require('./../options');
+const _ = require("deepdash")(require("lodash"));
+const mongoose = require("mongoose");
+const chai = require("chai");
+
+const should = chai.should();
+const assert = require("assert");
+const tellme = require("./../tellme");
+const { options, slugPaddingSize } = require("./../options");
+
+const slugGenerator = require("../../.");
 
 const SubChildSchema = new mongoose.Schema({
   title: { type: String },
-  slug: { type: String, slug: 'title' },
-  absoluteRootSlug: { type: String, slug: '/title' },
-  absoluteChildSlug: { type: String, slug: '/child.title' },
-  relativeParentSlug: { type: String, slug: ':title' }, // child's title
-  relativeGrandParentSlug: { type: String, slug: '::title' }, //parent's title
+  slug: { type: String, slug: "title" },
+  absoluteRootSlug: { type: String, slug: "/title" },
+  absoluteChildSlug: { type: String, slug: "/child.title" },
+  relativeParentSlug: { type: String, slug: ":title" }, // child's title
+  relativeGrandParentSlug: { type: String, slug: "::title" } // parent's title
 });
+SubChildSchema.plugin(slugGenerator, options);
 
 const ChildSchema = new mongoose.Schema({
   title: { type: String },
   subChild: SubChildSchema,
   subChildren: [SubChildSchema],
-  slug: { type: String, slug: 'title' },
-  subChildSlug: { type: String, slug: 'subChild.title' },
-  absoluteSlug: { type: String, slug: '/child.title' },
-  absoluteRootSlug: { type: String, slug: '/title' },
-  relativeParentSlug: { type: String, slug: ':title' }, //Parent
-  subChildrenSlug2: { type: String, slug: 'subChildren.2.title' },
-  subChildrenSlug3: { type: String, slug: 'subChildren.3.title' },
+  slug: { type: String, slug: "title" },
+  subChildSlug: { type: String, slug: "subChild.title" },
+  absoluteSlug: { type: String, slug: "/child.title" },
+  absoluteRootSlug: { type: String, slug: "/title" },
+  relativeParentSlug: { type: String, slug: ":title" }, // Parent
+  subChildrenSlug2: { type: String, slug: "subChildren.2.title" },
+  subChildrenSlug3: { type: String, slug: "subChildren.3.title" }
 });
+ChildSchema.plugin(slugGenerator, options);
 
 const ParentSchema = new mongoose.Schema({
   title: { type: String },
   child: ChildSchema,
   children: [ChildSchema],
-  slug: { type: String, slug: 'title' },
-  absoluteSlug: { type: String, slug: '/title' },
-  childSlug: { type: String, slug: 'child.title' },
-  absoluteChildSlug: { type: String, slug: '/child.title' },
-  subChildSlug: { type: String, slug: 'child.subChild.title' },
-  childrenSlug0: { type: String, slug: 'children.0.title' },
-  childrenSlug4: { type: String, slug: 'children.4.title' },
-  subChildrenSlug3: { type: String, slug: 'children.7.subChildren.3.title' },
-  subChildrenSlug7: { type: String, slug: 'children.3.subChildren.7.title' },
+  slug: { type: String, slug: "title" },
+  absoluteSlug: { type: String, slug: "/title" },
+  childSlug: { type: String, slug: "child.title" },
+  absoluteChildSlug: { type: String, slug: "/child.title" },
+  subChildSlug: { type: String, slug: "child.subChild.title" },
+  childrenSlug0: { type: String, slug: "children.0.title" },
+  childrenSlug4: { type: String, slug: "children.4.title" },
+  subChildrenSlug3: { type: String, slug: "children.7.subChildren.3.title" },
+  subChildrenSlug7: { type: String, slug: "children.3.subChildren.7.title" }
 });
+ParentSchema.plugin(slugGenerator, options);
 
 ParentSchema.statics.getNewDoc = function() {
-  let doc = {
+  const doc = {
     title: tellme.getText(0),
     child: {
       title: tellme.getText(1),
       subChild: {
-        title: tellme.getText(2),
+        title: tellme.getText(2)
       },
-      subChildren: [],
+      subChildren: []
     },
-    children: [],
+    children: []
   };
 
   for (let i = 0; i < 9; i++) {
     doc.child.subChildren.push({
-      title: tellme.getText(i),
+      title: tellme.getText(i)
     });
   }
 
@@ -67,9 +72,9 @@ ParentSchema.statics.getNewDoc = function() {
     doc.children.push({
       title: tellme.getText(8 - i),
       subChild: {
-        title: tellme.getText(i),
+        title: tellme.getText(i)
       },
-      subChildren: _.cloneDeep(doc.child.subChildren),
+      subChildren: _.cloneDeep(doc.child.subChildren)
     });
   }
 
@@ -77,55 +82,55 @@ ParentSchema.statics.getNewDoc = function() {
 };
 
 ParentSchema.statics.testNewDoc = function(doc) {
-  doc.should.have.property('title').and.equal(tellme.getText(0));
-  doc.should.have.property('slug').and.equal(tellme.getSlug(0));
-  doc.should.have.property('absoluteSlug').and.equal(tellme.getSlug(0));
-  doc.should.have.property('childSlug').and.equal(tellme.getSlug(1));
-  doc.should.have.property('absoluteChildSlug').and.equal(tellme.getSlug(1));
-  doc.should.have.property('subChildSlug').and.equal(tellme.getSlug(2));
-  doc.should.have.property('childrenSlug0').and.equal(tellme.getSlug(8));
-  doc.should.have.property('childrenSlug4').and.equal(tellme.getSlug(4));
-  doc.should.have.property('subChildrenSlug3').and.equal(tellme.getSlug(3));
-  doc.should.have.property('subChildrenSlug7').and.equal(tellme.getSlug(7));
+  doc.should.have.property("title").and.equal(tellme.getText(0));
+  doc.should.have.property("slug").and.equal(tellme.getSlug(0));
+  doc.should.have.property("absoluteSlug").and.equal(tellme.getSlug(0));
+  doc.should.have.property("childSlug").and.equal(tellme.getSlug(1));
+  doc.should.have.property("absoluteChildSlug").and.equal(tellme.getSlug(1));
+  doc.should.have.property("subChildSlug").and.equal(tellme.getSlug(2));
+  doc.should.have.property("childrenSlug0").and.equal(tellme.getSlug(8));
+  doc.should.have.property("childrenSlug4").and.equal(tellme.getSlug(4));
+  doc.should.have.property("subChildrenSlug3").and.equal(tellme.getSlug(3));
+  doc.should.have.property("subChildrenSlug7").and.equal(tellme.getSlug(7));
 
-  doc.should.have.nested.property('child.title').and.equal(tellme.getText(1));
-  doc.should.have.nested.property('child.slug').and.equal(tellme.getSlug(1));
+  doc.should.have.nested.property("child.title").and.equal(tellme.getText(1));
+  doc.should.have.nested.property("child.slug").and.equal(tellme.getSlug(1));
   doc.should.have.nested
-    .property('child.subChildSlug')
+    .property("child.subChildSlug")
     .and.equal(tellme.getSlug(2));
   doc.should.have.nested
-    .property('child.absoluteSlug')
+    .property("child.absoluteSlug")
     .and.equal(tellme.getSlug(1));
   doc.should.have.nested
-    .property('child.absoluteRootSlug')
+    .property("child.absoluteRootSlug")
     .and.equal(tellme.getSlug(0));
   doc.should.have.nested
-    .property('child.relativeParentSlug')
+    .property("child.relativeParentSlug")
     .and.equal(tellme.getSlug(0));
   doc.should.have.nested
-    .property('child.subChildrenSlug2')
+    .property("child.subChildrenSlug2")
     .and.equal(tellme.getSlug(2));
   doc.should.have.nested
-    .property('child.subChildrenSlug3')
+    .property("child.subChildrenSlug3")
     .and.equal(tellme.getSlug(3));
 
   doc.should.have.nested
-    .property('child.subChild.title')
+    .property("child.subChild.title")
     .and.equal(tellme.getText(2));
   doc.should.have.nested
-    .property('child.subChild.slug')
+    .property("child.subChild.slug")
     .and.equal(tellme.getSlug(2));
   doc.should.have.nested
-    .property('child.subChild.absoluteRootSlug')
+    .property("child.subChild.absoluteRootSlug")
     .and.equal(tellme.getSlug(0));
   doc.should.have.nested
-    .property('child.subChild.absoluteChildSlug')
+    .property("child.subChild.absoluteChildSlug")
     .and.equal(tellme.getSlug(1));
   doc.should.have.nested
-    .property('child.subChild.relativeParentSlug')
+    .property("child.subChild.relativeParentSlug")
     .and.equal(tellme.getSlug(1));
   doc.should.have.nested
-    .property('child.subChild.relativeGrandParentSlug')
+    .property("child.subChild.relativeGrandParentSlug")
     .and.equal(tellme.getSlug(0));
 
   for (let i = 0; i < 9; i++) {
@@ -199,14 +204,14 @@ ParentSchema.statics.testNewDoc = function(doc) {
 };
 
 ParentSchema.statics.changeDoc = function(doc) {
-  let changed = {
+  const changed = {
     title: tellme.getText(8),
     child: {
       title: tellme.getText(7),
       subChild: { title: tellme.getText(6) },
-      subChildren: [],
+      subChildren: []
     },
-    children: [],
+    children: []
   };
 
   for (let i = 0; i < 9; i++) {
@@ -224,55 +229,55 @@ ParentSchema.statics.changeDoc = function(doc) {
 };
 
 ParentSchema.statics.testChangedDoc = function(doc) {
-  doc.should.have.property('title').and.equal(tellme.getText(8));
-  doc.should.have.property('slug').and.equal(tellme.getSlug(8));
-  doc.should.have.property('absoluteSlug').and.equal(tellme.getSlug(8));
-  doc.should.have.property('childSlug').and.equal(tellme.getSlug(7));
-  doc.should.have.property('absoluteChildSlug').and.equal(tellme.getSlug(7));
-  doc.should.have.property('subChildSlug').and.equal(tellme.getSlug(6));
-  doc.should.have.property('childrenSlug0').and.equal(tellme.getSlug(0));
-  doc.should.have.property('childrenSlug4').and.equal(tellme.getSlug(4));
-  doc.should.have.property('subChildrenSlug3').and.equal(tellme.getSlug(5));
-  doc.should.have.property('subChildrenSlug7').and.equal(tellme.getSlug(1));
+  doc.should.have.property("title").and.equal(tellme.getText(8));
+  doc.should.have.property("slug").and.equal(tellme.getSlug(8));
+  doc.should.have.property("absoluteSlug").and.equal(tellme.getSlug(8));
+  doc.should.have.property("childSlug").and.equal(tellme.getSlug(7));
+  doc.should.have.property("absoluteChildSlug").and.equal(tellme.getSlug(7));
+  doc.should.have.property("subChildSlug").and.equal(tellme.getSlug(6));
+  doc.should.have.property("childrenSlug0").and.equal(tellme.getSlug(0));
+  doc.should.have.property("childrenSlug4").and.equal(tellme.getSlug(4));
+  doc.should.have.property("subChildrenSlug3").and.equal(tellme.getSlug(5));
+  doc.should.have.property("subChildrenSlug7").and.equal(tellme.getSlug(1));
 
-  doc.should.have.nested.property('child.title').and.equal(tellme.getText(7));
-  doc.should.have.nested.property('child.slug').and.equal(tellme.getSlug(7));
+  doc.should.have.nested.property("child.title").and.equal(tellme.getText(7));
+  doc.should.have.nested.property("child.slug").and.equal(tellme.getSlug(7));
   doc.should.have.nested
-    .property('child.subChildSlug')
+    .property("child.subChildSlug")
     .and.equal(tellme.getSlug(6));
   doc.should.have.nested
-    .property('child.absoluteSlug')
+    .property("child.absoluteSlug")
     .and.equal(tellme.getSlug(7));
   doc.should.have.nested
-    .property('child.absoluteRootSlug')
+    .property("child.absoluteRootSlug")
     .and.equal(tellme.getSlug(8));
   doc.should.have.nested
-    .property('child.relativeParentSlug')
+    .property("child.relativeParentSlug")
     .and.equal(tellme.getSlug(8));
   doc.should.have.nested
-    .property('child.subChildrenSlug2')
+    .property("child.subChildrenSlug2")
     .and.equal(tellme.getSlug(6));
   doc.should.have.nested
-    .property('child.subChildrenSlug3')
+    .property("child.subChildrenSlug3")
     .and.equal(tellme.getSlug(5));
 
   doc.should.have.nested
-    .property('child.subChild.title')
+    .property("child.subChild.title")
     .and.equal(tellme.getText(6));
   doc.should.have.nested
-    .property('child.subChild.slug')
+    .property("child.subChild.slug")
     .and.equal(tellme.getSlug(6));
   doc.should.have.nested
-    .property('child.subChild.absoluteRootSlug')
+    .property("child.subChild.absoluteRootSlug")
     .and.equal(tellme.getSlug(8));
   doc.should.have.nested
-    .property('child.subChild.absoluteChildSlug')
+    .property("child.subChild.absoluteChildSlug")
     .and.equal(tellme.getSlug(7));
   doc.should.have.nested
-    .property('child.subChild.relativeParentSlug')
+    .property("child.subChild.relativeParentSlug")
     .and.equal(tellme.getSlug(7));
   doc.should.have.nested
-    .property('child.subChild.relativeGrandParentSlug')
+    .property("child.subChild.relativeGrandParentSlug")
     .and.equal(tellme.getSlug(8));
 
   for (let i = 0; i < 9; i++) {
@@ -348,31 +353,35 @@ ParentSchema.statics.testChangedDoc = function(doc) {
 
 const SimpleChildSchema = new mongoose.Schema({
   title: { type: String },
-  slug: { type: String, slug: 'title' },
+  slug: { type: String, slug: "title" }
 });
+SimpleChildSchema.plugin(slugGenerator, options);
 
 const SimpleParentSchema = new mongoose.Schema({
   simpleParent: { type: String },
   title: { type: String },
-  slug: { type: String, slug: 'title' },
+  slug: { type: String, slug: "title" },
   child: SimpleChildSchema,
-  children: [SimpleChildSchema],
+  children: [SimpleChildSchema]
 });
+SimpleParentSchema.plugin(slugGenerator, options);
 
 const UniqueChildSchema = new mongoose.Schema({
   title: { type: String },
-  slugShort: { type: String, slug: 'title', unique:true },
-  slugCounter: { type: String, slug: 'title', unique:true, slugPaddingSize },
+  slugShort: { type: String, slug: "title", unique: true },
+  slugCounter: { type: String, slug: "title", unique: true, slugPaddingSize }
 });
+UniqueChildSchema.plugin(slugGenerator, options);
 
 const UniqueParentSchema = new mongoose.Schema({
   n: { type: Number },
   title: { type: String },
-  slugShort: { type: String, slug: 'title', unique:true },
-  slugCounter: { type: String, slug: 'title', unique:true, slugPaddingSize },
+  slugShort: { type: String, slug: "title", unique: true },
+  slugCounter: { type: String, slug: "title", unique: true, slugPaddingSize },
   child: UniqueChildSchema,
-  children: [UniqueChildSchema],
+  children: [UniqueChildSchema]
 });
+UniqueParentSchema.plugin(slugGenerator, options);
 
 module.exports = {
   SubChildSchema,
@@ -381,5 +390,5 @@ module.exports = {
   SimpleChildSchema,
   SimpleParentSchema,
   UniqueChildSchema,
-  UniqueParentSchema,
+  UniqueParentSchema
 };

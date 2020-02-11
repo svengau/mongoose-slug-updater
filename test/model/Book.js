@@ -1,11 +1,8 @@
-const mongoose = require('mongoose'),
-  chai = require('chai'),
-  should = chai.should(),
-  assert = require('assert');
-const tellme = require('./../tellme');
-const { options, slugPaddingSize } = require('./../options');
+const mongoose = require('mongoose');
 
-// mongoose.plugin(require('mongoose-slug-updater'));
+const { options } = require('./../options');
+const slugGenerator = require('../../.');
+
 const { Schema } = mongoose;
 const chapterSchema = new Schema(require('./ChapterSchema'));
 
@@ -131,6 +128,7 @@ bookSchema.index({ slug: 1, 'chapters.slug': 1 }, { unique: true });
 bookSchema.index({ slug: 1, 'chapters.githubFilePath': 1 }, { unique: true });
 
 bookSchema.loadClass(BookClass);
+bookSchema.plugin(slugGenerator, options);
 
 const Book = mongoose.model('Book', bookSchema);
 
